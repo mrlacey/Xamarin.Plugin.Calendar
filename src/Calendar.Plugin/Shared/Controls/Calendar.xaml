@@ -59,6 +59,10 @@
                     SelectionType="{Binding SelectionType, Source={x:Reference calendar}}"
                     RangeSelectionStartDate="{Binding RangeSelectionStartDate, Source={x:Reference calendar}}"
                     RangeSelectionEndDate="{Binding RangeSelectionEndDate, Source={x:Reference calendar}}" 
+                    EventOverrideBrush="{Binding EventOverrideBrush, Source={x:Reference calendar}}"
+                    FlexRangeEndBrush="{Binding FlexRangeEndBrush, Source={x:Reference calendar}}"
+                    FlexRangeMiddleBrush="{Binding FlexRangeMiddleBrush, Source={x:Reference calendar}}"
+                    TransparentGradientBrush="{Binding TransparentGradientBrush, Source={x:Reference calendar}}"
                 />
             </controls:SwipeAwareContainer>
         </StackLayout>

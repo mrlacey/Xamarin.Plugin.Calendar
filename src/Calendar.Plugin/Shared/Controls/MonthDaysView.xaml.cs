@@ -5,12 +5,12 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using Xamarin.Plugin.Calendar.Models;
-using System.Windows.Input;
-using Xamarin.Plugin.Calendar.Interfaces;
 using Xamarin.Plugin.Calendar.Enums;
+using Xamarin.Plugin.Calendar.Interfaces;
+using Xamarin.Plugin.Calendar.Models;
 
 namespace Xamarin.Plugin.Calendar.Controls
 {
@@ -137,9 +137,9 @@ namespace Xamarin.Plugin.Calendar.Controls
         /// Bindable property for SelectedTodayTextColor 
         /// </summary>
         public Color SelectedTodayTextColor
-        { 
-            get => (Color)GetValue(SelectedTodayTextColorProperty); 
-            set => SetValue(SelectedTodayTextColorProperty, value); 
+        {
+            get => (Color)GetValue(SelectedTodayTextColorProperty);
+            set => SetValue(SelectedTodayTextColorProperty, value);
         }
 
         /// <summary> 
@@ -448,6 +448,9 @@ namespace Xamarin.Plugin.Calendar.Controls
         public static readonly BindableProperty DisabledDayColorProperty =
           BindableProperty.Create(nameof(DisabledDayColor), typeof(Color), typeof(MonthDaysView), Color.FromHex("#ECECEC"));
 
+        public static readonly BindableProperty EventOverrideBrushProperty =
+            BindableProperty.Create(nameof(EventOverrideBrush), typeof(Brush), typeof(Calendar), null);
+
         /// <summary> 
         /// Color for days which are out of MinimumDate - MaximumDate range 
         /// </summary>
@@ -456,6 +459,38 @@ namespace Xamarin.Plugin.Calendar.Controls
             get => (Color)GetValue(DisabledDayColorProperty);
             set => SetValue(DisabledDayColorProperty, value);
         }
+
+        public Brush EventOverrideBrush
+        {
+            get => (Brush)GetValue(EventOverrideBrushProperty);
+            set => SetValue(EventOverrideBrushProperty, value);
+        }
+
+        public Brush FlexRangeEndBrush
+        {
+            get => (Brush)(GetValue(FlexRangeEndBrushProperty));
+            set => SetValue(FlexRangeEndBrushProperty, value);
+        }
+
+        public static readonly BindableProperty FlexRangeEndBrushProperty = BindableProperty.Create(nameof(FlexRangeEndBrush), typeof(Brush), typeof(MonthDaysView), defaultValue: default(Brush), defaultBindingMode: BindingMode.Default);
+
+        public Brush FlexRangeMiddleBrush
+        {
+            get => (Brush)(GetValue(FlexRangeMiddleBrushProperty));
+
+            set => SetValue(FlexRangeMiddleBrushProperty, value);
+        }
+
+        public static readonly BindableProperty FlexRangeMiddleBrushProperty = BindableProperty.Create(nameof(FlexRangeMiddleBrush), typeof(Brush), typeof(Calendar), defaultValue: default(Brush), defaultBindingMode: BindingMode.Default);
+
+        public Brush TransparentGradientBrush
+        {
+            get => (Brush)(GetValue(TransparentGradientBrushProperty));
+
+            set => SetValue(TransparentGradientBrushProperty, value);
+        }
+
+        public static readonly BindableProperty TransparentGradientBrushProperty = BindableProperty.Create(nameof(TransparentGradientBrush), typeof(Brush), typeof(Calendar), defaultValue: default(Brush), defaultBindingMode: BindingMode.Default);
 
         /// <summary>
         /// Bindable property for AnimateCalendar
@@ -605,7 +640,7 @@ namespace Xamarin.Plugin.Calendar.Controls
             foreach (var dayLabel in daysControl.Children.OfType<Label>())
             {
                 var abberivatedDayName = Culture.DateTimeFormat.AbbreviatedDayNames[dayNumber];
-                dayLabel.Text = abberivatedDayName.ToUpper().Substring(0, (int)DaysTitleMaximumLength > abberivatedDayName.Length ? abberivatedDayName.Length: (int)DaysTitleMaximumLength);
+                dayLabel.Text = abberivatedDayName.ToUpper().Substring(0, (int)DaysTitleMaximumLength > abberivatedDayName.Length ? abberivatedDayName.Length : (int)DaysTitleMaximumLength);
                 dayNumber = (dayNumber + 1) % 7;
             }
         }
@@ -638,12 +673,27 @@ namespace Xamarin.Plugin.Calendar.Controls
                 dayModel.TodayFillColor = TodayFillColor;
                 dayModel.DisabledColor = DisabledDayColor;
 
+                dayModel.BackgroundOverride = EventOverrideBrush;
+                dayModel.FlexRangeEndBrush = FlexRangeEndBrush;
+                dayModel.FlexRangeMiddleBrush = FlexRangeMiddleBrush;
+                dayModel.TransparentGradientBrush = TransparentGradientBrush;
+
                 AssignIndicatorColors(ref dayModel);
             }
         }
 
         private void OnDayModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (SelectionType == SelectionType.FlexRange && e.PropertyName == nameof(DayModel.ForceFlexRangeRecount))
+            {
+                if (sender is DayModel flexSelection)
+                {
+                    SelectDateFlexRange(flexSelection);
+                }
+
+                return;
+            }
+
             if (e.PropertyName != nameof(DayModel.IsSelected) || sender is not DayModel newSelected ||
                 (_propertyChangedNotificationSupressions.TryGetValue(e.PropertyName, out bool isSuppressed) && isSuppressed))
                 return;
@@ -653,7 +703,7 @@ namespace Xamarin.Plugin.Calendar.Controls
 
             if (SelectionType == SelectionType.Day)
                 SelectSingleDate(newSelected);
-            else
+            else if (SelectionType == SelectionType.Range)
                 SelectDateRange(newSelected);
         }
 
@@ -683,13 +733,88 @@ namespace Xamarin.Plugin.Calendar.Controls
                 SelectRangeStartDate(newSelected);
         }
 
+        private void SelectDateFlexRange(DayModel newSelected)
+        {
+            // if neither rangeStart or rangeEnd set then set them both to newDate
+
+            // if newDate < rangeStart then rangeStart = newDate
+            // else if newDate > rangeEnd then rangeEnd = newDate
+            // if between rangeStart and RangeEnd ....
+
+            if (RangeSelectionStartDate is null)
+            {
+                RangeSelectionStartDate = newSelected.Date;
+
+                if (RangeSelectionEndDate is null)
+                {
+                    RangeSelectionStartDate = newSelected.Date;
+                }
+            }
+            else
+            {
+                if (newSelected.Date < RangeSelectionStartDate)
+                {
+                    RangeSelectionStartDate = newSelected.Date;
+                }
+                else if (newSelected.Date > RangeSelectionEndDate)
+                {
+                    RangeSelectionEndDate = newSelected.Date;
+                }
+                else
+                {
+                    // TODO: Handle range over year start/end
+                    // This moves the end nearest to the selected date. This may not always be what's wanted.
+                    var daysFromStart = Math.Abs(RangeSelectionStartDate.Value.DayOfYear - newSelected.Date.DayOfYear);
+                    var daysFromEnd = Math.Abs(RangeSelectionEndDate.Value.DayOfYear - newSelected.Date.DayOfYear);
+
+                    if (daysFromStart <= daysFromEnd)
+                    {
+                        RangeSelectionStartDate = newSelected.Date;
+                    }
+                    else
+                    {
+                        RangeSelectionEndDate = newSelected.Date;
+                    }
+                }
+            }
+
+            foreach (var dayView in _dayViews)
+            {
+                var dayModel = dayView.BindingContext as DayModel;
+                dayModel.IsFlexSelectionEnd = false;
+                dayModel.IsFlexSelectionStart = false;
+
+                if (dayModel.Date < RangeSelectionStartDate || dayModel.Date > RangeSelectionEndDate)
+                {
+                    dayModel.FlexRangeSectionType = FlexRangeSectionType.None;
+                }
+                else if (dayModel.Date == RangeSelectionStartDate.Value.Date || dayModel.Date == RangeSelectionEndDate.Value.Date)
+                {
+                    if (dayModel.Date == RangeSelectionStartDate.Value.Date)
+                    {
+                        dayModel.FlexRangeSectionType = FlexRangeSectionType.End;
+                        dayModel.IsFlexSelectionStart = true;
+                    }
+                    if (dayModel.Date == RangeSelectionEndDate.Value.Date)
+                    {
+                        dayModel.FlexRangeSectionType = FlexRangeSectionType.End;
+                        dayModel.IsFlexSelectionEnd = true;
+                    }
+                }
+                else
+                {
+                    dayModel.FlexRangeSectionType = FlexRangeSectionType.Middle;
+                }
+            }
+        }
+
         private void SelectRangeStartDate(DayModel newSelected)
         {
             if (_rangeSelectionStartDay != null && !Equals(newSelected.Date, _rangeSelectionStartDay.Date))
                 ChangePropertySilently(nameof(RangeSelectionStartDate), () => RangeSelectionStartDate = newSelected.Date);
             else
                 _rangeSelectionStartDay = newSelected;
-            
+
             ChangePropertySilently(nameof(RangeSelectionEndDate), () => RangeSelectionEndDate = null);
 
             _dayViews.Select(x => x.BindingContext as DayModel).ToList().ForEach(a =>
@@ -721,7 +846,7 @@ namespace Xamarin.Plugin.Calendar.Controls
                                  .Select(offset => RangeSelectionStartDate.Value.AddDays(offset))
                                  .Select(a => a.Date).ToList();
 
-            if(dateList.Count > 0)
+            if (dateList.Count > 0)
                 dateList.RemoveAt(0);
 
             _selectedRange.Clear();
@@ -769,6 +894,17 @@ namespace Xamarin.Plugin.Calendar.Controls
                 dayView.BindingContext = dayModel;
                 dayModel.PropertyChanged += OnDayModelPropertyChanged;
 
+                var mod = _dayViews.Count % 7;
+
+                if (mod == 0)
+                {
+                    dayModel.IsRowStart = true;
+                }
+                else if (mod == 6)
+                {
+                    dayModel.IsRowEnd = true;
+                }
+
                 _dayViews.Add(dayView);
             }
         }
@@ -807,6 +943,7 @@ namespace Xamarin.Plugin.Calendar.Controls
                 dayModel.OtherMonthIsVisible = OtherMonthDayIsVisible;
                 dayModel.HasEvents = Events.ContainsKey(currentDate);
                 dayModel.IsDisabled = currentDate < MinimumDate || currentDate > MaximumDate;
+                dayModel.SelectionType = SelectionType;
 
                 if (SelectionType == SelectionType.Range)
                 {
@@ -822,16 +959,45 @@ namespace Xamarin.Plugin.Calendar.Controls
                     }
                     else ChangePropertySilently(nameof(DayModel.IsSelected), () => dayModel.IsSelected = false);
                 }
-                else ChangePropertySilently(nameof(DayModel.IsSelected), () => dayModel.IsSelected = currentDate == SelectedDate.Date);
+                else if (SelectionType == SelectionType.FlexRange)
+                {
+                    dayModel.IsFlexSelectionEnd = false;
+                    dayModel.IsFlexSelectionStart = false;
+
+                    if (currentDate.Date < RangeSelectionStartDate.Value.Date || currentDate.Date > RangeSelectionEndDate.Value.Date)
+                    {
+                        dayModel.FlexRangeSectionType = FlexRangeSectionType.None;
+                    }
+                    else if (currentDate.Date == RangeSelectionStartDate.Value.Date || currentDate.Date == RangeSelectionEndDate.Value.Date)
+                    {
+                        if (currentDate.Date == RangeSelectionStartDate.Value.Date)
+                        {
+                            dayModel.FlexRangeSectionType = FlexRangeSectionType.End;
+                            dayModel.IsFlexSelectionStart = true;
+                        }
+                        if (currentDate.Date == RangeSelectionEndDate.Value.Date)
+                        {
+                            dayModel.FlexRangeSectionType = FlexRangeSectionType.End;
+                            dayModel.IsFlexSelectionEnd = true;
+                        }
+                    }
+                    else
+                    {
+                        dayModel.FlexRangeSectionType = FlexRangeSectionType.Middle;
+                    }
+                    dayModel.Notify(nameof(dayModel.BackgroundBrush));
+                }
+                else ChangePropertySilently(nameof(DayModel.IsSelected), () => dayModel.IsSelected = currentDate == SelectedDate.Date); ChangePropertySilently(nameof(DayModel.IsSelected), () => dayModel.IsSelected = currentDate == SelectedDate.Date); ChangePropertySilently(nameof(DayModel.IsSelected), () => dayModel.IsSelected = currentDate == SelectedDate.Date); ChangePropertySilently(nameof(DayModel.IsSelected), () => dayModel.IsSelected = currentDate == SelectedDate.Date);
 
                 AssignIndicatorColors(ref dayModel);
 
                 if (dayModel.IsSelected)
                     _selectedDay = dayModel;
             }
+
             if (SelectionType == SelectionType.Range)
             {
-                if (_rangeSelectionStartDay == null && RangeSelectionStartDate != null) 
+                if (_rangeSelectionStartDay == null && RangeSelectionStartDate != null)
                     _rangeSelectionStartDay = new DayModel() { Date = RangeSelectionStartDate.Value };
 
                 if (_rangeSelectionEndDay == null && RangeSelectionEndDate != null)

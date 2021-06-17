@@ -220,6 +220,9 @@ namespace Xamarin.Plugin.Calendar.Controls
         public static readonly BindableProperty SelectedDateColorProperty =
           BindableProperty.Create(nameof(SelectedDateColor), typeof(Color), typeof(Calendar), Color.FromHex("#2196F3"));
 
+        public static readonly BindableProperty EventOverrideBrushProperty =
+            BindableProperty.Create(nameof(EventOverrideBrush), typeof(Brush), typeof(Calendar), null);
+
         /// <summary>
         /// Specifies the text color for the selected date
         /// </summary>
@@ -363,6 +366,39 @@ namespace Xamarin.Plugin.Calendar.Controls
             get => (Color)GetValue(EventIndicatorColorProperty);
             set => SetValue(EventIndicatorColorProperty, value);
         }
+
+        public Brush EventOverrideBrush
+        {
+            get => (Brush)GetValue(EventOverrideBrushProperty);
+            set => SetValue(EventOverrideBrushProperty, value);
+        }
+
+        public Brush FlexRangeEndBrush
+        {
+            get => (Brush)(GetValue(FlexRangeEndBrushProperty));
+
+            set => SetValue(FlexRangeEndBrushProperty, value);
+        }
+
+        public static readonly BindableProperty FlexRangeEndBrushProperty = BindableProperty.Create(nameof(FlexRangeEndBrush), typeof(Brush), typeof(Calendar), defaultValue: default(Brush), defaultBindingMode: BindingMode.Default);
+
+        public Brush FlexRangeMiddleBrush
+        {
+            get => (Brush)(GetValue(FlexRangeMiddleBrushProperty));
+
+            set => SetValue(FlexRangeMiddleBrushProperty, value);
+        }
+
+        public static readonly BindableProperty FlexRangeMiddleBrushProperty = BindableProperty.Create(nameof(FlexRangeMiddleBrush), typeof(Brush), typeof(Calendar), defaultValue: default(Brush), defaultBindingMode: BindingMode.Default);
+
+        public Brush TransparentGradientBrush
+        {
+            get => (Brush)(GetValue(TransparentGradientBrushProperty));
+
+            set => SetValue(TransparentGradientBrushProperty, value);
+        }
+
+        public static readonly BindableProperty TransparentGradientBrushProperty = BindableProperty.Create(nameof(TransparentGradientBrush), typeof(Brush), typeof(Calendar), defaultValue: default(Brush), defaultBindingMode: BindingMode.Default);
 
         /// <summary>
         /// Bindable property for EventIndicatorSelectedColor
@@ -1047,11 +1083,11 @@ namespace Xamarin.Plugin.Calendar.Controls
 
         private void UpdateEvents()
         {
-            if(SelectionType == SelectionType.Range && Events.TryGetValues(RangeSelectionStartDate, RangeSelectionEndDate, out var dayEvents))
+            if (SelectionType == SelectionType.Range && Events.TryGetValues(RangeSelectionStartDate, RangeSelectionEndDate, out var dayEvents))
             {
                 SelectedDayEvents = dayEvents;
                 eventsScrollView.ScrollToAsync(0, 0, false);
-            } 
+            }
             else if (SelectionType == SelectionType.Day && Events.TryGetValue(SelectedDate, out var rangeEvents))
             {
                 SelectedDayEvents = rangeEvents;
@@ -1070,7 +1106,7 @@ namespace Xamarin.Plugin.Calendar.Controls
         {
             if(SelectionType == SelectionType.Day)
                 SelectedDateText = SelectedDate.ToString(SelectedDateTextFormat, Culture);
-            else if (RangeSelectionStartDate is not null && RangeSelectionEndDate is not null && !Equals(RangeSelectionStartDate, RangeSelectionEndDate)) 
+            else if (SelectionType == SelectionType.Range && RangeSelectionStartDate is not null && RangeSelectionEndDate is not null && !Equals(RangeSelectionStartDate, RangeSelectionEndDate))
                 SelectedDateText = RangeSelectionStartDate?.ToString(SelectedDateTextFormat, Culture) + " - " + RangeSelectionEndDate?.ToString(SelectedDateTextFormat, Culture);
             else
                 SelectedDateText = RangeSelectionStartDate?.ToString(SelectedDateTextFormat, Culture);

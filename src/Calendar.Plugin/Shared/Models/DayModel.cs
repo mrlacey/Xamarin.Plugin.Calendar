@@ -12,12 +12,25 @@ namespace Xamarin.Plugin.Calendar.Models
             get => GetProperty<DateTime>();
             set => SetProperty(value)
                     .Notify(nameof(BackgroundColor),
+                            nameof(BackgroundBrush),
                             nameof(OutlineColor));
+        }
+
+        public bool IsRowStart
+        {
+            get => GetProperty<bool>();
+            set => SetProperty(value).Notify(nameof(LeftOuterBackground));
+        }
+
+        public bool IsRowEnd
+        {
+            get => GetProperty<bool>();
+            set => SetProperty(value).Notify(nameof(RightOuterBackground));
         }
 
         public double DayViewSize
         {
-            get => GetProperty<double>();
+            get => IsThisMonth ? GetProperty<double>() : 0;
             set => SetProperty(value);
         }
 
@@ -53,7 +66,14 @@ namespace Xamarin.Plugin.Calendar.Models
             get => GetProperty<bool>();
             set => SetProperty(value)
                     .Notify(nameof(TextColor),
-                            nameof(IsVisible));
+                            nameof(IsVisible),
+                            nameof(DayViewSize));
+        }
+
+        public SelectionType SelectionType
+        {
+            get => GetProperty(SelectionType.None);
+            set => SetProperty(value);
         }
 
         public bool IsSelected
@@ -62,9 +82,42 @@ namespace Xamarin.Plugin.Calendar.Models
             set => SetProperty(value)
                     .Notify(nameof(TextColor),
                             nameof(BackgroundColor),
+                            nameof(BackgroundBrush),
                             nameof(OutlineColor),
                             nameof(EventColor),
+                            nameof(DotColor),
                             nameof(BackgroundFullEventColor));
+        }
+
+        public int ForceFlexRangeRecount
+        {
+            get => GetProperty<int>();
+            set => SetProperty(value);
+        }
+
+        public FlexRangeSectionType FlexRangeSectionType
+        {
+            get => GetProperty(FlexRangeSectionType.None);
+            set => SetProperty(value)
+                    .Notify(nameof(BackgroundBrush),
+                            nameof(LeftOuterBackground),
+                            nameof(RightOuterBackground));
+        }
+
+        public bool IsFlexSelectionStart
+        {
+            get => GetProperty<bool>();
+            set => SetProperty(value)
+                    .Notify(nameof(LeftOuterBackground),
+                            nameof(RightOuterBackground));
+        }
+
+        public bool IsFlexSelectionEnd
+        {
+            get => GetProperty<bool>();
+            set => SetProperty(value)
+                    .Notify(nameof(LeftOuterBackground),
+                            nameof(RightOuterBackground));
         }
 
         public bool OtherMonthIsVisible
@@ -88,7 +141,7 @@ namespace Xamarin.Plugin.Calendar.Models
                     .Notify(nameof(TextColor));
         }
 
-        public Color SelectedTodayTextColor 
+        public Color SelectedTodayTextColor
         {
             get => GetProperty(Color.Transparent);
             set => SetProperty(value)
@@ -129,7 +182,8 @@ namespace Xamarin.Plugin.Calendar.Models
             set => SetProperty(value)
                     .Notify(nameof(IsEventDotVisible),
                             nameof(BackgroundEventIndicator),
-                            nameof(BackgroundColor));
+                            nameof(BackgroundColor),
+                            nameof(BackgroundBrush));
         }
 
         public Color EventIndicatorColor
@@ -138,7 +192,8 @@ namespace Xamarin.Plugin.Calendar.Models
             set => SetProperty(value)
                     .Notify(nameof(EventColor),
                             nameof(BackgroundColor),
-                            nameof(BackgroundFullEventColor));
+                            nameof(BackgroundFullEventColor),
+                            nameof(BackgroundBrush));
         }
 
         public Color EventIndicatorSelectedColor
@@ -147,7 +202,8 @@ namespace Xamarin.Plugin.Calendar.Models
             set => SetProperty(value)
                     .Notify(nameof(EventColor),
                             nameof(BackgroundColor),
-                            nameof(BackgroundFullEventColor));
+                            nameof(BackgroundFullEventColor),
+                            nameof(BackgroundBrush));
         }
 
         public Color EventIndicatorTextColor
@@ -169,11 +225,11 @@ namespace Xamarin.Plugin.Calendar.Models
                     .Notify(nameof(OutlineColor));
         }
 
-        public Color TodayTextColor 
-        { 
-            get => GetProperty(Color.Transparent); 
+        public Color TodayTextColor
+        {
+            get => GetProperty(Color.Transparent);
             set => SetProperty(value)
-                    .Notify(nameof(TextColor)); 
+                    .Notify(nameof(TextColor));
         }
 
         public Color TodayFillColor
@@ -187,6 +243,34 @@ namespace Xamarin.Plugin.Calendar.Models
         {
             get => GetProperty(Color.FromHex("#ECECEC"));
             set => SetProperty(value);
+        }
+
+        public Brush BackgroundOverride
+        {
+            get => GetProperty<Brush>();
+            set => SetProperty(value)
+                    .Notify(nameof(BackgroundBrush));
+        }
+
+        public Brush FlexRangeEndBrush
+        {
+            get => GetProperty<Brush>();
+            set => SetProperty(value)
+                    .Notify(nameof(BackgroundBrush));
+        }
+
+        public Brush FlexRangeMiddleBrush
+        {
+            get => GetProperty<Brush>();
+            set => SetProperty(value)
+                    .Notify(nameof(BackgroundBrush));
+        }
+
+        public Brush TransparentGradientBrush
+        {
+            get => GetProperty<Brush>();
+            set => SetProperty(value)
+                    .Notify(nameof(LeftOuterBackground), nameof(RightOuterBackground));
         }
 
         public bool IsEventDotVisible => HasEvents && (EventIndicatorType == EventIndicatorType.BottomDot || EventIndicatorType == EventIndicatorType.TopDot);
@@ -203,6 +287,24 @@ namespace Xamarin.Plugin.Calendar.Models
                                  ? EventIndicatorSelectedColor
                                  : EventIndicatorColor;
 
+        public Color DotColor
+        {
+            get
+            {
+                if (SelectionType == SelectionType.FlexRange)
+                {
+                    // TODO: get the proper colors from XAML?
+                    return FlexRangeSectionType == FlexRangeSectionType.End
+                        ? Color.White
+                        : Color.Green;
+                }
+                else
+                {
+                    return EventIndicatorColor;
+                }
+            }
+        }
+
         public Color OutlineColor => IsToday && !IsSelected
                                    ? TodayOutlineColor
                                    : Color.Transparent;
@@ -211,16 +313,91 @@ namespace Xamarin.Plugin.Calendar.Models
         {
             get
             {
-                if (!IsVisible) return DeselectedBackgroundColor;
+                if (!IsVisible || SelectionType == SelectionType.None) return DeselectedBackgroundColor;
 
-                return (BackgroundEventIndicator, IsSelected, IsToday) switch
+                if (SelectionType == SelectionType.FlexRange)
                 {
-                    (true, false, _) => EventIndicatorColor,
-                    (true, true, _) => EventIndicatorSelectedColor,
-                    (false, true, _) => SelectedBackgroundColor,
-                    (false, false, true) => TodayFillColor,
-                    (_, _, _) => DeselectedBackgroundColor
+                    return DeselectedBackgroundColor;
+                }
+
+                //return FlexRangeSectionType switch
+                //{
+                //    (FlexRangeSectionType.None) => DeselectedBackgroundColor,
+                //    (FlexRangeSectionType.Middle) => Color.HotPink,
+                //    (FlexRangeSectionType.End) => Color.Chartreuse
+                //};
+
+                return (IsThisMonth, BackgroundEventIndicator, IsSelected, IsToday) switch
+                {
+                    (true, true, false, _) => EventIndicatorColor,
+                    (true, true, true, _) => EventIndicatorSelectedColor,
+                    (true, false, true, _) => SelectedBackgroundColor,
+                    (true, false, false, true) => TodayFillColor,
+                    (_, _, _, _) => DeselectedBackgroundColor
                 };
+            }
+        }
+
+        public Brush BackgroundBrush
+        {
+            get
+            {
+                if (IsThisMonth
+                 && HasEvents
+                 && SelectionType == SelectionType.None
+                 && BackgroundEventIndicator
+                 && BackgroundOverride != null)
+                {
+                    return BackgroundOverride;
+                }
+                else if (SelectionType == SelectionType.FlexRange && IsVisible)
+                {
+                    if (FlexRangeSectionType == FlexRangeSectionType.End
+                      && FlexRangeEndBrush != null)
+                    {
+                        return FlexRangeEndBrush;
+                    }
+                    else if (FlexRangeSectionType == FlexRangeSectionType.Middle)
+                    {
+                        // Workaround for not being able to change a LinearGradientBrush with a SolidColorBrush
+                        // https://github.com/xamarin/Xamarin.Forms/issues/13417
+                        return FlexRangeMiddleBrush;
+                    }
+                }
+
+                return new SolidColorBrush(BackgroundColor);
+            }
+        }
+
+        public Brush RightOuterBackground
+        {
+            get
+            {
+                return IsRowEnd || !IsVisible
+                    ? TransparentGradientBrush
+                    : FlexRangeSectionType == FlexRangeSectionType.Middle
+                        ? FlexRangeMiddleBrush
+                        : FlexRangeSectionType == FlexRangeSectionType.End
+                        && IsFlexSelectionStart
+                        && !IsFlexSelectionEnd
+                            ? FlexRangeMiddleBrush
+                            : TransparentGradientBrush;
+            }
+        }
+
+        public Brush LeftOuterBackground
+        {
+            get
+            {
+                return IsRowStart || !IsVisible
+                    ? TransparentGradientBrush
+                    : FlexRangeSectionType == FlexRangeSectionType.Middle
+                        ? FlexRangeMiddleBrush
+                        : FlexRangeSectionType == FlexRangeSectionType.End
+                        && IsFlexSelectionEnd
+                        && !IsFlexSelectionStart
+                            ? FlexRangeMiddleBrush
+                            : TransparentGradientBrush;
             }
         }
 
@@ -233,12 +410,12 @@ namespace Xamarin.Plugin.Calendar.Models
                 return (IsDisabled, IsSelected, HasEvents, IsThisMonth, IsToday) switch
                 {
                     (true, _, _, _, _) => DisabledColor,
-                    (false, true, false, true, true) => SelectedTodayTextColor == Color.Transparent? SelectedTextColor : SelectedTodayTextColor,
+                    (false, true, false, true, true) => SelectedTodayTextColor == Color.Transparent ? SelectedTextColor : SelectedTodayTextColor,
                     (false, true, false, true, false) => SelectedTextColor,
                     (false, true, true, true, _) => EventIndicatorSelectedTextColor,
                     (false, false, true, true, _) => EventIndicatorTextColor,
                     (false, false, _, false, _) => OtherMonthColor,
-                    (false, false, false, true, true) => TodayTextColor == Color.Transparent? DeselectedTextColor : TodayTextColor,
+                    (false, false, false, true, true) => TodayTextColor == Color.Transparent ? DeselectedTextColor : TodayTextColor,
                     (false, false, false, true, false) => DeselectedTextColor,
                     (_, _, _, _, _) => Color.Default
                 };

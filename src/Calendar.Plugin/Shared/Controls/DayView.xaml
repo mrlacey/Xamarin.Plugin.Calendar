@@ -7,29 +7,48 @@
     x:DataType="models:DayModel"
     x:Name="dayView"
     BackgroundColor="{Binding BackgroundFullEventColor}">
-    <Frame 
-        BackgroundColor="{Binding BackgroundColor}"
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Frame Grid.Column="0" Background="{Binding LeftOuterBackground}" CornerRadius="0" Padding="0" Margin="0" HeightRequest="{Binding DayViewSize}" HasShadow="False" />
+        <Frame Grid.Column="1" Background="{Binding RightOuterBackground}" CornerRadius="0" Padding="0" Margin="0" HeightRequest="{Binding DayViewSize}" HasShadow="False" />
+        <Frame 
+       Grid.ColumnSpan="2"
+        Background="{Binding BackgroundBrush, Mode=OneWay}"
         CornerRadius="{Binding DayViewCornerRadius}"
         HeightRequest="{Binding DayViewSize}"
         OutlineColor="{Binding OutlineColor}"
         WidthRequest="{Binding DayViewSize}"
+        IsVisible="{Binding IsThisMonth}"
         HorizontalOptions="Center"
+            HasShadow="False"
         Padding="0">
         <FlexLayout 
             Direction="{Binding EventLayoutDirection}"
             AlignItems="Center"
             JustifyContent="Center">
+            <!-- This is just to balance the vertical alignment when the bottom dot is visible -->
+            <Frame
+                IsVisible="{Binding IsEventDotVisible}"
+                HeightRequest="6"
+                WidthRequest="0"
+                Padding="0"
+                HasShadow="False"
+            />
             <Label
                 Style="{Binding DaysLabelStyle}"
-                Text="{Binding Date.Day}"
+                Text="{Binding Date.Day, StringFormat='{0:00}'}"
                 TextColor="{Binding TextColor}"
                 HorizontalTextAlignment="Center"
             />
             <Frame
-                BackgroundColor="{Binding EventColor}"
+                BackgroundColor="{Binding DotColor}"
                 IsVisible="{Binding IsEventDotVisible}"
-                WidthRequest="8"
-                HeightRequest="8"
+                WidthRequest="6"
+                HeightRequest="6"
                 Padding="0"
                 CornerRadius="4"
                 HasShadow="False"
@@ -39,5 +58,6 @@
             <TapGestureRecognizer Tapped="OnTapped" />
         </Frame.GestureRecognizers>
     </Frame>
+    </Grid>
 </ContentView>
     

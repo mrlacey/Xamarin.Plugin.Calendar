@@ -13,5 +13,7 @@
         /// Selection of range of dates using start and end date.
         /// </summary>
         Range,
+        None,
+        FlexRange,
     }
 }

@@ -1,8 +1,7 @@
-﻿using Xamarin.Plugin.Calendar.Models;
-using System;
+﻿using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using System.Windows.Input;
+using Xamarin.Plugin.Calendar.Models;
 
 namespace Xamarin.Plugin.Calendar.Controls
 {
@@ -11,7 +10,7 @@ namespace Xamarin.Plugin.Calendar.Controls
     /// </summary>
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class DayView : ContentView
-    {        
+    {
         internal DayView()
         {
             InitializeComponent();
@@ -21,8 +20,22 @@ namespace Xamarin.Plugin.Calendar.Controls
         {
             if (BindingContext is DayModel dayModel && !dayModel.IsDisabled && dayModel.IsVisible)
             {
-                dayModel.IsSelected = true;
-                dayModel.DayTappedCommand?.Execute(dayModel.Date);
+                switch (dayModel.SelectionType)
+                {
+                    case Enums.SelectionType.Day:
+                    case Enums.SelectionType.Range:
+                        dayModel.IsSelected = true;
+                        dayModel.DayTappedCommand?.Execute(dayModel.Date);
+                        break;
+
+                    case Enums.SelectionType.FlexRange:
+                        // trigger something to get the MonthDaysView to refresh
+                        dayModel.ForceFlexRangeRecount++;
+                        break;
+
+                    case Enums.SelectionType.None:
+                        break;
+                }
             }
         }
     }
