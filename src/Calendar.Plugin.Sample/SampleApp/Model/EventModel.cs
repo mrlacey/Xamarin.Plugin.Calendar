@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace SampleApp.Model
 {
     public class EventModel

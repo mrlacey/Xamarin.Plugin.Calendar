@@ -1,6 +1,7 @@
 ﻿using Xamarin.Plugin.Calendar.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.ObjectModel;
@@ -10,13 +11,9 @@ using SampleApp.Model;
 
 namespace SampleApp.ViewModels
 {
-    public class SimplePageViewModel : BasePageViewModel
+    public class SimplePageViewModel : BasePageViewModel, INotifyPropertyChanged
     {
-        public ICommand TodayCommand => new Command(() => { 
-            Year = DateTime.Today.Year; 
-            Month = DateTime.Today.Month; 
-            SelectedDate = DateTime.Today;
-        });
+        public ICommand TodayCommand => new Command(() => { Year = DateTime.Today.Year; Month = DateTime.Today.Month; SelectedDate = DateTime.Today;});
         public ICommand EventSelectedCommand => new Command(async (item) => await ExecuteEventSelectedCommand(item));
         
         public SimplePageViewModel() : base()
@@ -89,8 +86,8 @@ namespace SampleApp.ViewModels
             set => SetProperty(ref _year, value);
         }
 
-        private DateTime? _selectedDate = DateTime.Today;
-        public DateTime? SelectedDate
+        private DateTime _selectedDate = DateTime.Today;
+        public DateTime SelectedDate
         {
             get => _selectedDate;
             set => SetProperty(ref _selectedDate, value);

@@ -12,7 +12,7 @@ Simple cross platform plugin for Calendar control featuring:
 - UI reactive to EventCollection, Culture and other changes
 
 We are open to any suggestions and feedback, and we got our community telegram group [here](https://t.me/XamarinPluginCalendar) :)   
-
+If you are coming back take a look on the [Changelog here](https://github.com/lilcodelab/Xamarin.Plugin.Calendar/blob/master/CHANGELOG.md).
 
 ## Simple Implementation
 | Android | iPhone |
@@ -37,7 +37,7 @@ We are open to any suggestions and feedback, and we got our community telegram g
 #### Supported versions
 | Platform | Version |
 | -------- | ------- 
-| Xamarin.Forms | 4.8+ |
+| Xamarin.Forms | 4.5+ |
 | Xamarin.Android | 10.0+ |
 | Xamarin.iOS | 9.0+ |
 
@@ -60,17 +60,17 @@ Basic control usage:
 ```
 
 Bindable properties:
-* `Culture` _CultureInfo_ calender culture/language
-* `Month` _int_ currently viewing month
-* `Year` _int_ currently viewing year
-* `Events` _EventCollection_ (from package) your events for calender
+* `Culture` CultureInfo
+* `Month` int
+* `Year` int
+* `Events` EventCollection (from package)
 * Custom colors, fonts, sizes ...
 
 #### Binding events:
 In your XAML, add the data template for events, and bind the events collection, example:
 ```xml
 <controls:Calendar
-    Events="{Binding Events}">
+        Events="{Binding Events}">
     <controls:Calendar.EventTemplate>
         <DataTemplate>
             <StackLayout
@@ -154,36 +154,22 @@ Where `EventModel` is just an example, it can be replaced by any data model you 
 
 `DayEventCollection` is just a wrapper over `List<T>` exposing custom properties `EventIndicatorColor` and `EventIndicatorSelectedColor` for assigning a custom color to the dot.
 
-#### Set up culture
-
-In your ViewModel add property for Culture:
-```csharp
-public CultureInfo Culture => new CultureInfo("hr-HR")
-```
-
-In XAML add Culture binding
-```xml
-<controls:Calendar
-    Culture="{Binding Culture}">
-</controls:Calendar>
-```
-
 #### Available color customization
 Sample properties:
 ```xml
 MonthLabelColor="Red"
 YearLabelColor="Blue"
+SelectedDateColor="Red"
+SelectedDayBackgroundColor="DarkCyan"
 EventIndicatorColor="Red"
 EventIndicatorSelectedColor="White"
 DaysTitleColor="Orange"
+SelectedDayTextColor="Cyan"
 DeselectedDayTextColor="Blue"
 OtherMonthDayColor="Gray"
-SelectedDayTextColor="Cyan"
-SelectedDayBackgroundColor="DarkCyan"
-SelectedDateColor="Red"
-SelectedTodayTextColor="Green"
 TodayOutlineColor="Blue"
 TodayFillColor="Silver"
+SelectedTodayTextColor="Green"
 TodayTextColor="Yellow"
 ```
 
@@ -216,23 +202,19 @@ SwipeToChangeMonthEnabled="False"
 SwipeUpToHideEnabled="False"
 ```
 
-##### Selection type of calender
+##### Selection type customization
 
-You can either use the `Calender` class implementation for single selection mode or `RangeSelectionCalendar` for range selection mode.
-
+You can either use the default single selection mode with the 'Day' SelectionType enum value, where the date value binds to the SelectedDate property.
 ```xml
-    <plugin:Calendar
-        SelectedDate="{Binding SelectedDate}"/>
+SelectionType="Day"
+SelectedDate="{Binding SelectedDate}"
 ```
-On the `RangeSelectionCalendar` you can use binding for start date `SelectedStartDate` and end date `SelectedEndDate` or get list of selected dates with `SelectedDates`.
+or the Range selection mode, where StartDate and EndDate bindings are required.
 ```xml
-    <plugin:RangeSelectionCalendar
-        x:Name="rangedCalendar"
-        SelectedDates="{Binding SelectedDates}"
-        SelectedEndDate="{Binding SelectedEndDate}"
-        SelectedStartDate="{Binding SelectedStartDate}">
+SelectionType="Range"
+RangeSelectionStartDate="{Binding SelectedStartDate}"
+RangeSelectionEndDate="{Binding SelectedEndDate}"
 ```
-__Remark: Don't use both `SelectedDates` and `SelectedStartDate`/`SelectedEndDate`__
 
 ##### Other customizations
 Enable/Disable animation when calendar is loaded or refreshed

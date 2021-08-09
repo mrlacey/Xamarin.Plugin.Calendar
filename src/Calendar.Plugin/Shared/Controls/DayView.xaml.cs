@@ -36,8 +36,6 @@ namespace Xamarin.Plugin.Calendar.Controls
                     case Enums.SelectionType.None:
                         break;
                 }
-                ////dayModel.IsSelected = !dayModel.IsSelected;
-                ////dayModel.DayTappedCommand?.Execute(dayModel.Date);
             }
         }
     }
