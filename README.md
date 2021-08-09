@@ -1,3 +1,12 @@
+This is a highly customized version of the code from  [lilcodelab/Xamarin.Plugin.Calendar](https://github.com/lilcodelab/Xamarin.Plugin.Calendar)
+
+The customization was done before the original project had fully implemented range selection and because a different way of interacting with the UI to select a range was required. 
+
+The changes were originally done with the hope that they could be merged back or this fork could continue to be updated from upstream but changes in upstream/master now mean this is not practical without rewriting all the changes made here.  
+
+This is now considered a diverging fork. Others are free to continue to use this code as per the terms of the original (MIT) license but this fork is being maintained only for a specific scenario and external contributions are unlikley to be merged.
+
+<!---
 ## Calendar Plugin for Xamarin.Forms
 [![Build Status](https://dev.azure.com/lilcodelab/Xamarin.Plugin.Calendar/_apis/build/status/lilcodelab.Xamarin.Plugin.Calendar?branchName=master)](https://dev.azure.com/lilcodelab/Xamarin.Plugin.Calendar/_build/latest?definitionId=20&branchName=master) 
 [![Nuget](https://img.shields.io/nuget/v/Xamarin.Plugin.Calendar.svg?label=nuget)](https://www.nuget.org/packages/Xamarin.Plugin.Calendar/)
@@ -280,3 +289,4 @@ Customize what to show in case the selected date has no events. Example from Adv
     </DataTemplate>
 </plugin:Calendar.EmptyTemplate>
 ```
+--->
