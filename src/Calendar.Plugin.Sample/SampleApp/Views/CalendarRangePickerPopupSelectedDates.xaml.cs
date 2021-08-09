@@ -7,27 +7,27 @@ using Xamarin.Forms.Xaml;
 namespace SampleApp.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class CalendarPickerPopup : PopupPage
+    public partial class CalendarRangePickerPopupSelectedDates : PopupPage
     {
-        private readonly Action<CalendarPickerResult> _onClosedPopup;
+        private readonly Action<CalendarRangePickerResult> _onClosedPopup;
 
-        public CalendarPickerPopup(Action<CalendarPickerResult> onClosedPopup)
+        public CalendarRangePickerPopupSelectedDates(Action<CalendarRangePickerResult> onClosedPopup)
         {
             _onClosedPopup = onClosedPopup;
-            InitializeComponent();            
+            InitializeComponent();
         }
 
         protected override void OnAppearing()
         {
             base.OnAppearing();
 
-            if (BindingContext is CalendarPickerPopupViewModel vm)
+            if (BindingContext is CalendarRangePickerPopupSelectedDatesViewModel vm)
                 vm.Closed += _onClosedPopup;
         }
 
         protected override void OnDisappearing()
         {
-            if (BindingContext is CalendarPickerPopupViewModel vm)
+            if (BindingContext is CalendarRangePickerPopupSelectedDatesViewModel vm)
                 vm.Closed -= _onClosedPopup;
 
             base.OnDisappearing();

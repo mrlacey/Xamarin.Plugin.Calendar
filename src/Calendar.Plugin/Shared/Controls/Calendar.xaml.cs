@@ -2,10 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
+using Xamarin.Plugin.Calendar.Controls.SelectionEngines;
 using Xamarin.Plugin.Calendar.Enums;
 using Xamarin.Plugin.Calendar.Models;
 
@@ -92,21 +94,6 @@ namespace Xamarin.Plugin.Calendar.Controls
         {
             get => (DateTime)GetValue(MonthYearProperty);
             set => SetValue(MonthYearProperty, value);
-        }
-
-        /// <summary>
-        /// Bindable property for SelectedDate
-        /// </summary>
-        public static readonly BindableProperty SelectedDateProperty =
-          BindableProperty.Create(nameof(SelectedDate), typeof(DateTime), typeof(Calendar), DateTime.Today, BindingMode.TwoWay);
-
-        /// <summary>
-        /// Specifies the currently selected date in single selection mode
-        /// </summary>
-        public DateTime SelectedDate
-        {
-            get => (DateTime)GetValue(SelectedDateProperty);
-            set => SetValue(SelectedDateProperty, value);
         }
 
         /// <summary>
@@ -213,7 +200,7 @@ namespace Xamarin.Plugin.Calendar.Controls
             get => (Color)GetValue(YearLabelColorProperty);
             set => SetValue(YearLabelColorProperty, value);
         }
-        
+
         /// <summary>
         /// Bindable property for SelectedDateColor
         /// </summary>
@@ -521,7 +508,7 @@ namespace Xamarin.Plugin.Calendar.Controls
         }
 
         /// <summary>
-        /// Bindable property for 
+        /// Bindable property for
         /// </summary>
         public static readonly BindableProperty TodayTextColorProperty =
             BindableProperty.Create(nameof(TodayTextColor), typeof(Color?), typeof(Calendar), Color.Transparent);
@@ -529,10 +516,10 @@ namespace Xamarin.Plugin.Calendar.Controls
         /// <summary>
         /// Specifies the color of text for today's date
         /// </summary>
-        public Color TodayTextColor 
-        { 
-            get => (Color)GetValue(TodayTextColorProperty); 
-            set => SetValue(TodayTextColorProperty, value); 
+        public Color TodayTextColor
+        {
+            get => (Color)GetValue(TodayTextColorProperty);
+            set => SetValue(TodayTextColorProperty, value);
         }
 
         /// <summary>
@@ -736,8 +723,8 @@ namespace Xamarin.Plugin.Calendar.Controls
             set => SetValue(DaysTitleLabelStyleProperty, value);
         }
 
-        /// <summary> 
-        /// Bindable property for DisableSwipeDetection 
+        /// <summary>
+        /// Bindable property for DisableSwipeDetection
         /// </summary>
         public static readonly BindableProperty DisableSwipeDetectionProperty =
           BindableProperty.Create(nameof(DisableSwipeDetection), typeof(bool), typeof(Calendar), false);
@@ -753,14 +740,14 @@ namespace Xamarin.Plugin.Calendar.Controls
             set => SetValue(DisableSwipeDetectionProperty, value);
         }
 
-        /// <summary> 
-        /// Bindable property for SwipeUpCommand 
+        /// <summary>
+        /// Bindable property for SwipeUpCommand
         /// </summary>
         public static readonly BindableProperty SwipeUpCommandProperty =
           BindableProperty.Create(nameof(SwipeUpCommand), typeof(ICommand), typeof(Calendar), null);
 
-        /// <summary> 
-        /// Activated when user swipes-up over days view 
+        /// <summary>
+        /// Activated when user swipes-up over days view
         /// </summary>
         public ICommand SwipeUpCommand
         {
@@ -768,14 +755,14 @@ namespace Xamarin.Plugin.Calendar.Controls
             set => SetValue(SwipeUpCommandProperty, value);
         }
 
-        /// <summary> 
-        /// Bindable property for SwipeUpToHideEnabled 
+        /// <summary>
+        /// Bindable property for SwipeUpToHideEnabled
         /// </summary>
         public static readonly BindableProperty SwipeUpToHideEnabledProperty =
           BindableProperty.Create(nameof(SwipeUpToHideEnabled), typeof(bool), typeof(Calendar), true);
 
-        /// <summary> 
-        /// Enable/disable default swipe-up action for showing/hiding calendar 
+        /// <summary>
+        /// Enable/disable default swipe-up action for showing/hiding calendar
         /// </summary>
         public bool SwipeUpToHideEnabled
         {
@@ -783,14 +770,14 @@ namespace Xamarin.Plugin.Calendar.Controls
             set => SetValue(SwipeUpToHideEnabledProperty, value);
         }
 
-        /// <summary> 
-        /// Bindable property for SwipeLeftCommand 
+        /// <summary>
+        /// Bindable property for SwipeLeftCommand
         /// </summary>
         public static readonly BindableProperty SwipeLeftCommandProperty =
           BindableProperty.Create(nameof(SwipeLeftCommand), typeof(ICommand), typeof(Calendar), null);
 
-        /// <summary> 
-        /// Activated when user swipes-left over days view 
+        /// <summary>
+        /// Activated when user swipes-left over days view
         /// </summary>
         public ICommand SwipeLeftCommand
         {
@@ -798,14 +785,14 @@ namespace Xamarin.Plugin.Calendar.Controls
             set => SetValue(SwipeLeftCommandProperty, value);
         }
 
-        /// <summary> 
-        /// Bindable property for SwipeRightCommand 
+        /// <summary>
+        /// Bindable property for SwipeRightCommand
         /// </summary>
         public static readonly BindableProperty SwipeRightCommandProperty =
           BindableProperty.Create(nameof(SwipeRightCommand), typeof(ICommand), typeof(Calendar), null);
 
-        /// <summary> 
-        /// Activated when user swipes-right over days view 
+        /// <summary>
+        /// Activated when user swipes-right over days view
         /// </summary>
         public ICommand SwipeRightCommand
         {
@@ -813,14 +800,14 @@ namespace Xamarin.Plugin.Calendar.Controls
             set => SetValue(SwipeRightCommandProperty, value);
         }
 
-        /// <summary> 
-        /// Bindable property for SwipeToChangeMonthEnabled 
+        /// <summary>
+        /// Bindable property for SwipeToChangeMonthEnabled
         /// </summary>
         public static readonly BindableProperty SwipeToChangeMonthEnabledProperty =
           BindableProperty.Create(nameof(SwipeToChangeMonthEnabled), typeof(bool), typeof(Calendar), true);
 
-        /// <summary> 
-        /// Enable/disable default swipe actions for changing months 
+        /// <summary>
+        /// Enable/disable default swipe actions for changing months
         /// </summary>
         public bool SwipeToChangeMonthEnabled
         {
@@ -891,54 +878,69 @@ namespace Xamarin.Plugin.Calendar.Controls
             set => SetValue(AnimateCalendarProperty, value);
         }
 
-        #region Range Selection
-
-        /// <summary>
-        /// Bindable property for RangeSelectionStartDate
-        /// </summary>
-        public static readonly BindableProperty RangeSelectionStartDateProperty =
-          BindableProperty.Create(nameof(RangeSelectionStartDate), typeof(DateTime?), typeof(Calendar), null, BindingMode.TwoWay);
-
-        /// <summary>
-        /// Beginning of selected interval in ranged selection mode
-        /// </summary>
-        public DateTime? RangeSelectionStartDate
-        {
-            get => (DateTime?)GetValue(RangeSelectionStartDateProperty);
-            set => SetValue(RangeSelectionStartDateProperty, value);
-        }
-
-        /// <summary>
-        /// Bindable property for RangeSelectionEndDate
-        /// </summary>
-        public static readonly BindableProperty RangeSelectionEndDateProperty =
-          BindableProperty.Create(nameof(RangeSelectionEndDate), typeof(DateTime?), typeof(Calendar), null, BindingMode.TwoWay);
-
-        /// <summary>
-        /// End of selected interval in ranged selection mode
-        /// </summary>
-        public DateTime? RangeSelectionEndDate
-        {
-            get => (DateTime?)GetValue(RangeSelectionEndDateProperty);
-            set => SetValue(RangeSelectionEndDateProperty, value);
-        }
-
-        /// <summary>
-        /// Bindable property for SelectionType
-        /// </summary>
-        public static readonly BindableProperty SelectionTypeProperty =
-            BindableProperty.Create(nameof(SelectionType), typeof(SelectionType), typeof(Calendar), SelectionType.Day);
-
-        /// <summary>
-        /// Specifies the date selection mode
-        /// </summary>
-        public SelectionType SelectionType
-        {
-            get => (SelectionType)GetValue(SelectionTypeProperty);
-            set => SetValue(SelectionTypeProperty, value);
-        }
-
         #endregion
+
+        #region SelectedDates
+        /// <summary>
+        /// Bindable property for SelectedDate
+        /// </summary>
+        public static readonly BindableProperty SelectedDateProperty =
+          BindableProperty.Create(nameof(SelectedDate), typeof(DateTime?), typeof(Calendar), null, BindingMode.TwoWay, propertyChanged: OnSelectedDateChanged);
+
+        private static void OnSelectedDateChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var control = (Calendar)bindable;
+            var dateToSet = (DateTime?)newValue;
+
+            control.SetValue(SelectedDateProperty, dateToSet);
+            if (!control._isSelectingDates || control.monthDaysView.CurrentSelectionEngine is SingleSelectionEngine)
+            {
+                if (dateToSet.HasValue)
+                    control.SetValue(SelectedDatesProperty, new List<DateTime> { dateToSet.Value });
+                else
+                    control.SetValue(SelectedDatesProperty, new List<DateTime>());
+            }
+            else
+            {
+                control._isSelectingDates = false;
+            }
+        }
+
+        /// <summary>
+        /// Selected date in single date selection mode
+        /// </summary>
+        public DateTime? SelectedDate
+        {
+            get => (DateTime?)GetValue(SelectedDateProperty);
+            set
+            {
+                SetValue(SelectedDatesProperty, value.HasValue ? new List<DateTime> { value.Value } : null);
+                SetValue(SelectedDateProperty, value);
+            }
+        }
+
+        /// <summary>
+        /// Bindable property for SelectedDates
+        /// </summary>
+        public static readonly BindableProperty SelectedDatesProperty =
+          BindableProperty.Create(nameof(SelectedDates), typeof(List<DateTime>), typeof(Calendar), null, BindingMode.TwoWay);
+
+        private bool _isSelectingDates = false;
+
+        /// <summary>
+        /// Selected date in single date selection mode
+        /// </summary>
+        public List<DateTime> SelectedDates
+        {
+            get => (List<DateTime>)GetValue(SelectedDatesProperty);
+            set
+            {
+                SetValue(SelectedDatesProperty, value);
+                _isSelectingDates = true;
+                SetValue(SelectedDateProperty, value?.Count > 0 ? value.First() : null);
+            }
+        }
+
         #endregion
 
         private const uint CalendarSectionAnimationRate = 16;
@@ -961,6 +963,7 @@ namespace Xamarin.Plugin.Calendar.Controls
             ShowHideCalendarCommand = new Command(ToggleCalendarSectionVisibility);
 
             InitializeComponent();
+            InitializeSelectionType();
             UpdateSelectedDateLabel();
             UpdateMonthLabel();
             UpdateEvents();
@@ -969,6 +972,11 @@ namespace Xamarin.Plugin.Calendar.Controls
             _calendarSectionAnimateShow = new Animation(AnimateMonths, 0, 1);
 
             calendarContainer.SizeChanged += OnCalendarContainerSizeChanged;
+        }
+
+        private void InitializeSelectionType()
+        {
+            monthDaysView.CurrentSelectionEngine = new SingleSelectionEngine();
         }
 
         #region Properties
@@ -1018,7 +1026,7 @@ namespace Xamarin.Plugin.Calendar.Controls
                     newEvents.CollectionChanged += view.OnEventsCollectionChanged;
 
                 view.UpdateEvents();
-                view.monthDaysView.UpdateDays(view.AnimateCalendar);
+                view.monthDaysView.UpdateAndAnimateDays(view.AnimateCalendar);
             }
         }
 
@@ -1049,7 +1057,9 @@ namespace Xamarin.Plugin.Calendar.Controls
             }
         }
 
-        /// <summary> Method that is called when a bound property is changed. </summary>
+        /// <summary>
+        /// Method that is called when a bound property is changed.
+        /// </summary>
         /// <param name="propertyName">The name of the bound property that changed.</param>
         protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
@@ -1061,9 +1071,7 @@ namespace Xamarin.Plugin.Calendar.Controls
                     UpdateMonthLabel();
                     break;
 
-                case nameof(SelectedDate):
-                case nameof(RangeSelectionStartDate):
-                case nameof(RangeSelectionEndDate):
+                case nameof(SelectedDates):
                     UpdateSelectedDateLabel();
                     UpdateEvents();
                     break;
@@ -1095,6 +1103,9 @@ namespace Xamarin.Plugin.Calendar.Controls
             }
             else
                 SelectedDayEvents = null;
+            ////SelectedDayEvents = monthDaysView.CurrentSelectionEngine.TryGetSelectedEvents(Events, out var selectedEvents) ? selectedEvents : null;
+
+            ////eventsScrollView.ScrollToAsync(0, 0, false);
         }
 
         private void UpdateMonthLabel()
@@ -1110,6 +1121,7 @@ namespace Xamarin.Plugin.Calendar.Controls
                 SelectedDateText = RangeSelectionStartDate?.ToString(SelectedDateTextFormat, Culture) + " - " + RangeSelectionEndDate?.ToString(SelectedDateTextFormat, Culture);
             else
                 SelectedDateText = RangeSelectionStartDate?.ToString(SelectedDateTextFormat, Culture);
+            ////SelectedDateText = monthDaysView.CurrentSelectionEngine.GetSelectedDateText(SelectedDateTextFormat, Culture);
         }
 
         private void ShowHideCalendarSection()
@@ -1139,7 +1151,7 @@ namespace Xamarin.Plugin.Calendar.Controls
         private void OnEventsCollectionChanged(object sender, EventCollection.EventCollectionChangedArgs e)
         {
             UpdateEvents();
-            monthDaysView.UpdateDays(AnimateCalendar);
+            monthDaysView.UpdateAndAnimateDays(AnimateCalendar);
         }
 
         #endregion

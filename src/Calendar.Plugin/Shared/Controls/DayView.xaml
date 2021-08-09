@@ -24,8 +24,8 @@
         WidthRequest="{Binding DayViewSize}"
         IsVisible="{Binding IsThisMonth}"
         HorizontalOptions="Center"
-            HasShadow="False"
-        Padding="0">
+        Padding="0"
+        HasShadow="False">
         <FlexLayout 
             Direction="{Binding EventLayoutDirection}"
             AlignItems="Center"
