@@ -1,5 +1,12 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.23">
 
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;MonoAndroid10.0;Xamarin.iOS10</TargetFrameworks>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
@@ -20,7 +27,7 @@
     <RootNamespace>Xamarin.Plugin.Calendar</RootNamespace>
 
     <NeutralLanguage>en</NeutralLanguage>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -43,6 +50,12 @@
     <!-- sourcelink: Include PDB in the built .nupkg -->
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+        <NoWarn>1701;1702</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup>
+        <NoWarn>1591</NoWarn>
+    </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />
