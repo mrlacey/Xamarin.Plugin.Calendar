@@ -32,8 +32,8 @@ namespace Xamarin.Plugin.Calendar.Controls
                         // trigger something to get the MonthDaysView to refresh
                         dayModel.ForceFlexRangeRecount++;
                         break;
-
                     case Enums.SelectionType.None:
+                        dayModel.DayTappedCommand?.Execute(dayModel.Date);
                         break;
                 }
             }

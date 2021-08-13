@@ -554,9 +554,9 @@ namespace Xamarin.Plugin.Calendar.Controls
 
         #endregion
 
-        private readonly Dictionary<string, bool> _propertyChangedNotificationSupressions = new();
-        private readonly List<DayView> _dayViews = new();
-        private List<DayModel> _selectedRange = new();
+        private readonly Dictionary<string, bool> _propertyChangedNotificationSupressions = new Dictionary<string, bool>();
+        private readonly List<DayView> _dayViews = new List<DayView>();
+        private List<DayModel> _selectedRange = new List<DayModel>();
         private DayModel _selectedDay;
         private DayModel _rangeSelectionStartDay;
         private DayModel _rangeSelectionEndDay;
@@ -694,7 +694,7 @@ namespace Xamarin.Plugin.Calendar.Controls
                 return;
             }
 
-            if (e.PropertyName != nameof(DayModel.IsSelected) || sender is not DayModel newSelected ||
+            if (e.PropertyName != nameof(DayModel.IsSelected) || !(sender is DayModel newSelected) ||
                 (_propertyChangedNotificationSupressions.TryGetValue(e.PropertyName, out bool isSuppressed) && isSuppressed))
                 return;
 
@@ -715,19 +715,19 @@ namespace Xamarin.Plugin.Calendar.Controls
                 DisplayedMonthYear = new DateTime(SelectedDate.Year, SelectedDate.Month, 1);
             else
             {
-                if (_selectedDay is not null)
+                if (_selectedDay != null)
                     _selectedDay.IsSelected = false;
 
                 _selectedDay = newSelected;
 
-                if (_selectedDay is not null)
+                if (_selectedDay != null)
                     _selectedDay.IsSelected = true;
             }
         }
 
         private void SelectDateRange(DayModel newSelected)
         {
-            if (_rangeSelectionStartDay is not null && _rangeSelectionEndDay is null)
+            if (_rangeSelectionStartDay != null && _rangeSelectionEndDay is null)
                 SelectRangeEndDate(newSelected);
             else
                 SelectRangeStartDate(newSelected);

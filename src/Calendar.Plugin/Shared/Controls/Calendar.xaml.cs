@@ -1030,7 +1030,7 @@ namespace Xamarin.Plugin.Calendar.Controls
 
         private static void OnMonthChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            if (newValue is not int newMonth || newMonth <= 0 || newMonth > 12)
+            if (!(newValue is int newMonth) || newMonth <= 0 || newMonth > 12)
                 throw new ArgumentException("Month must be between 1 and 12.");
 
             if (bindable is Calendar calendar && calendar.MonthYear.Month != newMonth)
@@ -1106,7 +1106,7 @@ namespace Xamarin.Plugin.Calendar.Controls
         {
             if(SelectionType == SelectionType.Day)
                 SelectedDateText = SelectedDate.ToString(SelectedDateTextFormat, Culture);
-            else if (SelectionType == SelectionType.Range && RangeSelectionStartDate is not null && RangeSelectionEndDate is not null && !Equals(RangeSelectionStartDate, RangeSelectionEndDate))
+            else if (SelectionType == SelectionType.Range && RangeSelectionStartDate != null && RangeSelectionEndDate != null && !Equals(RangeSelectionStartDate, RangeSelectionEndDate))
                 SelectedDateText = RangeSelectionStartDate?.ToString(SelectedDateTextFormat, Culture) + " - " + RangeSelectionEndDate?.ToString(SelectedDateTextFormat, Culture);
             else
                 SelectedDateText = RangeSelectionStartDate?.ToString(SelectedDateTextFormat, Culture);

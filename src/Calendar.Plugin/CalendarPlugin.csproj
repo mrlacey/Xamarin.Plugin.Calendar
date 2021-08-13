@@ -27,7 +27,7 @@
     <RootNamespace>Xamarin.Plugin.Calendar</RootNamespace>
 
     <NeutralLanguage>en</NeutralLanguage>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
